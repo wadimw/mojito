@@ -7,11 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Builds and prints messages with ANSI escape codes to standard output and
- * logger.
+ * Builds and prints messages to standard output and logger.
  * <p>
- * Printing of ANSI escape codes can be disabled for standard output (Logger
- * messages never contain escape codes).
+ * Output type can be set independently for either output channel.
  *
  * @author jaurambault
  */
@@ -38,23 +36,28 @@ public class ConsoleWriter {
     int numberOfNewLinesInLastPrintedString = 0;
 
     /**
-     * To enable or disable ainsi codes in the ainsi output
+     * Output type for console
      */
-    boolean isAnsiCodeEnabled;
+    OutputType consoleOutputType;
 
     /**
-     * To choose the output type
+     * Output type for logger
      */
-    OutputType outputType;
+    OutputType loggerOutputType = OutputType.PLAIN;
 
     /**
      * Keep track of the number of new lines in current string to be printed.
      */
     int numberOfNewLinesInCurrentString = 0;
 
-    public ConsoleWriter(boolean isAnsiCodeEnabled, OutputType outputType) {
-        this.isAnsiCodeEnabled = isAnsiCodeEnabled;
-        this.outputType = outputType;
+    public ConsoleWriter(OutputType outputType) {
+        this.consoleOutputType = outputType;
+        resetOutputBuilders();
+    }
+
+    public ConsoleWriter(OutputType consoleOutputType, OutputType loggerOutputType) {
+        this.consoleOutputType = consoleOutputType;
+        this.loggerOutputType = loggerOutputType;
         resetOutputBuilders();
     }
 
@@ -65,9 +68,7 @@ public class ConsoleWriter {
      * @return this instance
      */
     public ConsoleWriter fg(Ansi.Color color) {
-        if (isAnsiCodeEnabled) {
-            ansi.fg(color);
-        }
+        ansi.fg(color);
         return this;
     }
 
@@ -77,9 +78,7 @@ public class ConsoleWriter {
      * @return this instance
      */
     public ConsoleWriter reset() {
-        if (isAnsiCodeEnabled) {
-            ansi.reset();
-        }
+        ansi.reset();
         return this;
     }
 
@@ -186,7 +185,6 @@ public class ConsoleWriter {
      * @return this instance
      */
     public ConsoleWriter newLine(int numberOfNewLines) {
-
         for (int i = 0; i < numberOfNewLines; i++) {
             newLine();
         }
@@ -221,22 +219,41 @@ public class ConsoleWriter {
      * @return this instance
      */
     public ConsoleWriter println(int numberOfNewLines) {
-
         reset();
         newLine(numberOfNewLines);
 
         numberOfNewLinesInLastPrintedString = numberOfNewLinesInCurrentString;
         numberOfNewLinesInCurrentString = 0;
 
-        if (OutputType.ANSI_CONSOLE_AND_LOGGER.equals(outputType)) {
-            System.out.print(ansi.toString());
-            logger.info(trimReturnLine(stringBuilder.toString()));
-        } else if (OutputType.ANSI_LOGGER.equals(outputType)) {
-            logger.info(trimReturnLine(ansi.toString()));
+        // write to Console
+        String consoleOutput = getOutput(consoleOutputType);
+        if (consoleOutput != null) {
+            System.out.print(consoleOutput);
+        }
+
+        // write to Logger
+        String loggerOutput = getOutput(loggerOutputType);
+        if (consoleOutput != null) {
+            logger.info(trimReturnLine(loggerOutput));
         }
 
         resetOutputBuilders();
         return this;
+    }
+
+    /**
+     * Retrieve available output for a given output type
+     */
+    private String getOutput(OutputType outputType) {
+        switch (outputType) {
+            case ANSI:
+                return ansi.toString();
+            case PLAIN:
+                return stringBuilder.toString();
+            case NONE:
+            default:
+                return null;
+        }
     }
 
     /**
@@ -263,29 +280,28 @@ public class ConsoleWriter {
      * @return this instance
      */
     public ConsoleWriter erasePreviouslyPrintedLines() {
-
-        if (isAnsiCodeEnabled) {
-            for (int i = 0; i < numberOfNewLinesInLastPrintedString; i++) {
-                ansi.cursorUp(1);
-                ansi.eraseLine();
-            }
+        for (int i = 0; i < numberOfNewLinesInLastPrintedString; i++) {
+            ansi.cursorUp(1);
+            ansi.eraseLine();
         }
-
         return this;
     }
 
     /**
-     * Types of output for the ConsoleWritter
+     * Types of output for the ConsoleWriter
      */
     public enum OutputType {
-
         /**
-         * Output in ANSI mode only to the logger (console is skipped).
+         * Plaintext output
          */
-        ANSI_LOGGER,
+        PLAIN,
         /**
-         * Ouput in ANSI mode to the console and in plain mode to the logger.
+         * Output formatted with ANSI escape sequences
          */
-        ANSI_CONSOLE_AND_LOGGER
+        ANSI,
+        /**
+         * No output
+         */
+        NONE
     }
 }
