@@ -19,18 +19,20 @@ public class ConsoleWriterConfig {
     @Primary
     @Bean
     public ConsoleWriter consoleWriter() {
-        ConsoleWriter consoleWriter = new ConsoleWriter(
-                consoleWriterConfigurationProperties.isAnsiCodeEnabled(),
-                consoleWriterConfigurationProperties.getOutputType());
-        return consoleWriter;
+        return new ConsoleWriter(consoleWriterConfigurationProperties.getConsoleOutputType(),
+                consoleWriterConfigurationProperties.getLoggerOutputType());
     }
 
     @Bean(name = "ansiCodeEnabledFalse")
     public ConsoleWriter consoleWriterNoAnsi() {
-        ConsoleWriter consoleWriter = new ConsoleWriter(
-                false,
-                consoleWriterConfigurationProperties.getOutputType());
-        return consoleWriter;
+        return new ConsoleWriter(getOutputTypeNoAnsi(consoleWriterConfigurationProperties.getConsoleOutputType()),
+                getOutputTypeNoAnsi(consoleWriterConfigurationProperties.getLoggerOutputType()));
     }
 
+    private ConsoleWriter.OutputType getOutputTypeNoAnsi(ConsoleWriter.OutputType outputType) {
+        if (outputType == ConsoleWriter.OutputType.ANSI) {
+            return ConsoleWriter.OutputType.PLAIN;
+        }
+        return outputType;
+    }
 }

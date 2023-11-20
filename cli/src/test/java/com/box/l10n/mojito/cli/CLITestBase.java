@@ -60,7 +60,7 @@ import java.util.function.Supplier;
 @SpringApplicationConfiguration(classes = {CLITestBase.class})
 @ComponentScan("com.box.l10n.mojito")
 @WebAppConfiguration
-@IntegrationTest({"server.port=0", "l10n.consoleWriter.ansiCodeEnabled=false"})
+@IntegrationTest({"server.port=0", "l10n.consoleWriter.consoleOutputType=PLAIN"})
 @Configuration
 public class CLITestBase extends IOTestBase {
 

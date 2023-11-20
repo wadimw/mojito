@@ -13,7 +13,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author jaurambault
  */
 public class ConsoleWriterTest {
@@ -28,7 +27,7 @@ public class ConsoleWriterTest {
 
     @Test
     public void ansiCode() throws IOException {
-        ConsoleWriter consoleWriter = new ConsoleWriter(true, ConsoleWriter.OutputType.ANSI_CONSOLE_AND_LOGGER);
+        ConsoleWriter consoleWriter = new ConsoleWriter(ConsoleWriter.OutputType.ANSI);
 
         consoleWriter.newLine(2).fg(Ansi.Color.CYAN).a("ansiCode: ").a(1L).println(3);
 
@@ -39,7 +38,7 @@ public class ConsoleWriterTest {
 
     @Test
     public void disableAnsiCode() {
-        ConsoleWriter consoleWriter = new ConsoleWriter(false, ConsoleWriter.OutputType.ANSI_CONSOLE_AND_LOGGER);
+        ConsoleWriter consoleWriter = new ConsoleWriter(ConsoleWriter.OutputType.PLAIN);
 
         consoleWriter.newLine(2).fg(Ansi.Color.CYAN).a("disableAnsiCode: ").a(1L).println(3);
 
@@ -53,4 +52,12 @@ public class ConsoleWriterTest {
                 + ""));
     }
 
+    @Test
+    public void disableOutput() {
+        ConsoleWriter consoleWriter = new ConsoleWriter(ConsoleWriter.OutputType.NONE);
+
+        consoleWriter.newLine(2).fg(Ansi.Color.CYAN).a("disableConsoleOutput: ").a(1L).println(3);
+
+        assertFalse(outputCapture.toString().contains("disableConsoleOutput: 1"));
+    }
 }

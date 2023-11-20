@@ -36,7 +36,7 @@ public class RunMojo extends AbstractMojo {
         Iterable<String> args = Splitter.on(" ").split(commandParameter);
         
         ArrayList<String> argsWithOutputType = Lists.newArrayList(args);
-        argsWithOutputType.add("--l10n.consoleWritter.outputType=ANSI_LOGGER");
+        argsWithOutputType.add("--l10n.consoleWriter.consoleOutputType=NONE --l10n.consoleWriter.loggerOutputType=ANSI");
 
         App.main(Iterables.toArray(argsWithOutputType, String.class));
     }
